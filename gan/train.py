@@ -1,6 +1,7 @@
 """
 Training of WGAN-GP
 """
+import os
 
 import torch
 import torch.optim as optim
@@ -22,14 +23,14 @@ BATCH_SIZE = 32
 IMG_SIZE = 128
 CHANNELS_IMG = 1
 NUM_CLASSES = 4
-GEN_EMBEDDING = 100
-Z_DIM = 100
-NUM_EPOCHS = 350
-FEATURES_CRITIC = 32
-FEATURES_GEN = 32
+GEN_EMBEDDING = 128
+Z_DIM = 128
+NUM_EPOCHS = 1000
+FEATURES_CRITIC = 64
+FEATURES_GEN = 64
 CRITIC_ITERATIONS = 5
 LAMBDA_GP = 10
-DATA_DIR = '../data-engineering/midi-images'
+DATA_DIR = '../data_engineering/midi-images'
 
 transforms = transforms.Compose(
     [
@@ -64,8 +65,8 @@ opt_critic = optim.Adam(critic.parameters(), lr=LEARNING_RATE_C)
 
 # for tensorboard plotting
 fixed_noise = torch.randn(BATCH_SIZE, Z_DIM, 1, 1).to(device)
-writer_real = SummaryWriter(f"../logs/fit128-3/real")
-writer_fake = SummaryWriter(f"../logs/fit128-3/fake")
+writer_real = SummaryWriter(f"../logs/fit128-4/real")
+writer_fake = SummaryWriter(f"../logs/fit128-4/fake")
 step = 0
 
 gen.train()
@@ -83,15 +84,15 @@ for epoch in range(NUM_EPOCHS):
             noise = torch.randn(cur_batch_size, Z_DIM, 1, 1).to(device)
             fake = gen(noise, labels)
 
-            critic_noise = 0.03*torch.randn(cur_batch_size, 1, IMG_SIZE, IMG_SIZE).to(device)
+            # critic_noise = 0.03*torch.randn(cur_batch_size, 1, IMG_SIZE, IMG_SIZE).to(device)
 
-            critic_real = critic(real + critic_noise, labels).reshape(-1)
-            critic_fake = critic(fake + critic_noise, labels).reshape(-1)
-            gp = gradient_penalty(critic, labels, real + critic_noise, fake + critic_noise, device=device)
+            # critic_real = critic(real + critic_noise, labels).reshape(-1)
+            # critic_fake = critic(fake + critic_noise, labels).reshape(-1)
+            # gp = gradient_penalty(critic, labels, real + critic_noise, fake + critic_noise, device=device)
 
-            # critic_real = critic(real, labels).reshape(-1)
-            # critic_fake = critic(fake, labels).reshape(-1)
-            # gp = gradient_penalty(critic, labels, real, fake, device=device)
+            critic_real = critic(real, labels).reshape(-1)
+            critic_fake = critic(fake, labels).reshape(-1)
+            gp = gradient_penalty(critic, labels, real, fake, device=device)
 
             loss_critic = (
                     -(torch.mean(critic_real) - torch.mean(critic_fake)) + LAMBDA_GP * gp
@@ -110,6 +111,7 @@ for epoch in range(NUM_EPOCHS):
         # Print losses occasionally and print to tensorboard
         if batch_idx == len(loader)-2:
             print(
+
                 f"Epoch [{epoch}/{NUM_EPOCHS}] Batch {batch_idx+1}/{len(loader)} \
                   Loss C: {loss_critic:.4f}, loss G: {loss_gen:.4f}"
             )
@@ -125,5 +127,7 @@ for epoch in range(NUM_EPOCHS):
 
             step += 1
 
-torch.save(gen, 'saved/generator.pt')
-torch.save(critic, 'saved/critic.pt')
+os.makedirs('saved/', exist_ok=True)
+
+torch.save(gen, 'saved/generator4.pt')
+torch.save(critic, 'saved/critic4.pt')
