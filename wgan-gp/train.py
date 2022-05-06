@@ -1,6 +1,3 @@
-"""
-Training of WGAN-GP
-"""
 import os
 
 import torch
@@ -24,10 +21,10 @@ IMG_SIZE = 128
 CHANNELS_IMG = 1
 NUM_CLASSES = 4
 GEN_EMBEDDING = 128
-Z_DIM = 128
+Z_DIM = 100
 NUM_EPOCHS = 1000
-FEATURES_CRITIC = 64
-FEATURES_GEN = 64
+FEATURES_CRITIC = 32
+FEATURES_GEN = 32
 CRITIC_ITERATIONS = 5
 LAMBDA_GP = 10
 DATA_DIR = '../data_engineering/midi-images'
@@ -44,29 +41,27 @@ transforms = transforms.Compose(
 
 dataset = datasets.ImageFolder(DATA_DIR, transform=transforms)
 print(dataset.find_classes(DATA_DIR))
-# comment mnist above and uncomment below for training on CelebA
-# dataset = datasets.ImageFolder(root="celeb_dataset", transform=transforms)
+
 loader = DataLoader(
     dataset,
     batch_size=BATCH_SIZE,
     shuffle=True,
 )
 
-# initialize gen and disc, note: discriminator should be called critic,
-# according to WGAN paper (since it no longer outputs between [0, 1])
+
 gen = Generator(Z_DIM, CHANNELS_IMG, FEATURES_GEN, NUM_CLASSES, IMG_SIZE, GEN_EMBEDDING).to(device)
 critic = Discriminator(CHANNELS_IMG, FEATURES_CRITIC, NUM_CLASSES, IMG_SIZE).to(device)
 initialize_weights(gen)
 initialize_weights(critic)
 
 # initializate optimizer
-opt_gen = optim.Adam(gen.parameters(), lr=LEARNING_RATE_G)
-opt_critic = optim.Adam(critic.parameters(), lr=LEARNING_RATE_C)
+opt_gen = optim.Adam(gen.parameters(), lr=LEARNING_RATE_G, betas=(0.0, 0.9))
+opt_critic = optim.Adam(critic.parameters(), lr=LEARNING_RATE_C, betas=(0.0, 0.9))
 
 # for tensorboard plotting
 fixed_noise = torch.randn(BATCH_SIZE, Z_DIM, 1, 1).to(device)
-writer_real = SummaryWriter(f"../logs/fit128-4/real")
-writer_fake = SummaryWriter(f"../logs/fit128-4/fake")
+writer_real = SummaryWriter(f"logs/fit-l/real")
+writer_fake = SummaryWriter(f"logs/fit-l/fake")
 step = 0
 
 gen.train()
@@ -77,6 +72,7 @@ for epoch in range(NUM_EPOCHS):
         real = real.to(device)
         cur_batch_size = real.shape[0]
         labels = labels.to(device)
+        # print(labels)
 
         # Train Critic: max E[critic(real)] - E[critic(fake)]
         # equivalent to minimizing the negative of that
@@ -112,7 +108,7 @@ for epoch in range(NUM_EPOCHS):
         if batch_idx == len(loader)-2:
             print(
 
-                f"Epoch [{epoch}/{NUM_EPOCHS}] Batch {batch_idx+1}/{len(loader)} \
+                f"Epoch [{epoch+1}/{NUM_EPOCHS}] Batch {batch_idx+1}/{len(loader)} \
                   Loss C: {loss_critic:.4f}, loss G: {loss_gen:.4f}"
             )
 
@@ -129,5 +125,5 @@ for epoch in range(NUM_EPOCHS):
 
 os.makedirs('saved/', exist_ok=True)
 
-torch.save(gen, 'saved/generator4.pt')
-torch.save(critic, 'saved/critic4.pt')
+torch.save(gen, 'saved/generator-l.pt')
+torch.save(critic, 'saved/critic-l.pt')

@@ -1,4 +1,6 @@
+import numpy as np
 import torch
+from PIL import ImageOps
 
 
 def gradient_penalty(critic, labels, real, fake, device="cpu"):
@@ -21,3 +23,13 @@ def gradient_penalty(critic, labels, real, fake, device="cpu"):
     gradient_norm = gradient.norm(2, dim=1)
     _gradient_penalty = torch.mean((gradient_norm - 1) ** 2)
     return _gradient_penalty
+
+
+def filter_image(image):
+    _img = ImageOps.grayscale(image)
+    arr = np.asarray(_img)
+    threshold = np.max(arr) * 0.2
+
+    good_pixels = arr >= threshold
+
+    return np.where(good_pixels, 255, 0)

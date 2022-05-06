@@ -9,4 +9,4 @@ def play_music(midi_path):
     sp.play()
 
 
-play_music('gan/generated/2/9.mid')
+play_music('wgan-gp/generated/2/9.mid')

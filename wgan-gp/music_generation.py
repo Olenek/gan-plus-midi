@@ -5,9 +5,10 @@ import numpy as np
 import torch
 import torchvision.transforms.functional as F
 import torchvision.utils
+from PIL import Image
+
 from img2midi import image2midi
-import model
-from midi2audio import FluidSynth
+from utils import filter_image
 
 
 def show(imgs):
@@ -25,30 +26,33 @@ torch.manual_seed(0)
 
 Z_DIM = 100
 NUM_CLASSES = 4
-sample_size = 16  # % NUM_CLASSES = 0
+SAMPLE_SIZE = 32  # % NUM_CLASSES = 0
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-generator = torch.load('saved/generator.pt')
+generator = torch.load('saved/generator-l.pt')
 generator.eval()
-noise = torch.randn(sample_size, Z_DIM, 1, 1).to(device)
-labels = torch.Tensor(np.repeat(np.arange(0, NUM_CLASSES), sample_size / NUM_CLASSES)).type(torch.LongTensor).to(device)
+noise = torch.randn(SAMPLE_SIZE, Z_DIM, 1, 1).to(device)
+labels = torch.Tensor(np.repeat(np.arange(0, NUM_CLASSES), SAMPLE_SIZE / NUM_CLASSES)).type(torch.LongTensor).to(device)
 
-directory = 'generated/'
+directory = 'generated-l/'
 os.makedirs(directory, exist_ok=True)
 
-contrasts = [30, 50, 70, 80, 90]
-fs = FluidSynth()
+# contrasts = [30, 50, 70]
 
 with torch.no_grad():
     fake = generator(noise, labels)
     for i, image in enumerate(fake):
-        os.makedirs(f'generated/{labels[i]}', exist_ok=True)
-        torchvision.utils.save_image(image, f'generated/{labels[i]}/{i%4}.png')
-        for percentage in contrasts:
-            image2midi(f'generated/{labels[i]}/{i%4}.png', contrast_percentage=percentage)
-            # fs.midi_to_audio(f'generated/{labels[i]}/{i%4}_{percentage}.mid', f'generated/{labels[i]}/{i%4}_{percentage}.wav')
+        subdir = os.path.join(directory, f'{labels[i].tolist()}')
+        os.makedirs(subdir, exist_ok=True)
+        img_path = os.path.join(subdir, f'{i % (SAMPLE_SIZE // NUM_CLASSES)}.png')
+        torchvision.utils.save_image(image, img_path)
 
+        with Image.open(img_path) as im:
+            i = Image.fromarray(filter_image(im)).convert('RGB')
+            i.save(img_path)
+
+        image2midi(img_path)
 
 # def test():
 #     fs = FluidSynth()
