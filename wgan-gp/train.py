@@ -22,7 +22,7 @@ CHANNELS_IMG = 1
 NUM_CLASSES = 4
 GEN_EMBEDDING = 128
 Z_DIM = 100
-NUM_EPOCHS = 1000
+NUM_EPOCHS = 2000
 FEATURES_CRITIC = 32
 FEATURES_GEN = 32
 CRITIC_ITERATIONS = 5
@@ -60,8 +60,10 @@ opt_critic = optim.Adam(critic.parameters(), lr=LEARNING_RATE_C, betas=(0.0, 0.9
 
 # for tensorboard plotting
 fixed_noise = torch.randn(BATCH_SIZE, Z_DIM, 1, 1).to(device)
-writer_real = SummaryWriter(f"logs/fit-l/real")
-writer_fake = SummaryWriter(f"logs/fit-l/fake")
+
+os.makedirs('logs/fit-l/', exist_ok=True)
+writer_real = SummaryWriter('logs/fit-l/real')
+writer_fake = SummaryWriter('logs/fit-l/fake')
 step = 0
 
 gen.train()

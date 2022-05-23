@@ -45,7 +45,7 @@ def image2midi(image_path, contrast_percentage=None):
     prev_notes = updateNotes(im_arr.T[0, :], {})
     if contrast_percentage is None:
         _contrast = 80
-        _suffux = ""
+        _suffix = ""
     else:
         _suffix = f"_{contrast_percentage}"
 
