@@ -8,25 +8,12 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from model import Discriminator, Generator, initialize_weights
+from settings import *
 from utils import gradient_penalty
 
 # Hyperparameters etc.
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(device)
-LEARNING_RATE_G = 1e-4
-LEARNING_RATE_C = 1e-4
-BATCH_SIZE = 32
-IMG_SIZE = 128
-CHANNELS_IMG = 1  # Always one, as grayscale
-NUM_CLASSES = 4
-GEN_EMBEDDING = 128
-Z_DIM = 128
-NUM_EPOCHS = 3000
-FEATURES_CRITIC = 32
-FEATURES_GEN = 32
-CRITIC_ITERATIONS = 5
-LAMBDA_GP = 10
-EMOPIA_DIR = '../emopia'
 
 
 def emopia_transforms(music):

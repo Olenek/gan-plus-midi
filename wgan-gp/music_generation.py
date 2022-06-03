@@ -6,7 +6,7 @@ import torch
 import torchvision.transforms.functional as F
 import torchvision.utils
 from PIL import Image
-
+from settings import *
 from img2midi import image2midi
 from utils import filter_image
 
@@ -24,18 +24,14 @@ def show(imgs):
 
 torch.manual_seed(0)
 
-Z_DIM = 100
-NUM_CLASSES = 4
-SAMPLE_SIZE = 32  # % NUM_CLASSES = 0
-
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-generator = torch.load('saved/generator-l.pt')
+generator = torch.load('saved/generator.pt')
 generator.eval()
 noise = torch.randn(SAMPLE_SIZE, Z_DIM, 1, 1).to(device)
 labels = torch.Tensor(np.repeat(np.arange(0, NUM_CLASSES), SAMPLE_SIZE / NUM_CLASSES)).type(torch.LongTensor).to(device)
 
-directory = 'generated-l/'
+directory = 'generated/'
 os.makedirs(directory, exist_ok=True)
 
 # contrasts = [30, 50, 70]
@@ -45,14 +41,16 @@ with torch.no_grad():
     for i, image in enumerate(fake):
         subdir = os.path.join(directory, f'{labels[i].tolist()}')
         os.makedirs(subdir, exist_ok=True)
-        img_path = os.path.join(subdir, f'{i % (SAMPLE_SIZE // NUM_CLASSES)}.png')
-        torchvision.utils.save_image(image, img_path)
+        img_path_1 = os.path.join(subdir, f'_{i % (SAMPLE_SIZE // NUM_CLASSES)}.png')
+        img_path_f = os.path.join(subdir, f'f{i % (SAMPLE_SIZE // NUM_CLASSES)}.png')
+        torchvision.utils.save_image(image, img_path_1)
+        torchvision.utils.save_image(image, img_path_f)
 
-        with Image.open(img_path) as im:
+        with Image.open(img_path_f) as im:
             i = Image.fromarray(filter_image(im)).convert('RGB')
-            i.save(img_path)
+            i.save(img_path_f)
 
-        image2midi(img_path)
+        # image2midi(img_path_1)
 
 # def test():
 #     fs = FluidSynth()
