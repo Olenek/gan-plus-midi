@@ -4,4 +4,4 @@ training-analysis/.ipynb_checkpoints/
 /wgan-gp/logs/
 /data_engineering/midi-files/
 /data_engineering/midi-images/
-*/.idea/
+*.idea/
