@@ -11,6 +11,6 @@ FEATURES_CRITIC = 32
 FEATURES_GEN = 32
 CRITIC_ITERATIONS = 5
 LAMBDA_GP = 10
-SAMPLE_SIZE = 32
+SAMPLE_SIZE = 40
 DATA_DIR = '../data_engineering/midi-images'
 EMOPIA_DIR = '../emopia'

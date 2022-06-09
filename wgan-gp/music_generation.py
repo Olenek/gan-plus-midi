@@ -41,16 +41,16 @@ with torch.no_grad():
     for i, image in enumerate(fake):
         subdir = os.path.join(directory, f'{labels[i].tolist()}')
         os.makedirs(subdir, exist_ok=True)
-        img_path_1 = os.path.join(subdir, f'_{i % (SAMPLE_SIZE // NUM_CLASSES)}.png')
+        # img_path_1 = os.path.join(subdir, f'_{i % (SAMPLE_SIZE // NUM_CLASSES)}.png')
         img_path_f = os.path.join(subdir, f'f{i % (SAMPLE_SIZE // NUM_CLASSES)}.png')
-        torchvision.utils.save_image(image, img_path_1)
+        # torchvision.utils.save_image(image, img_path_1)
         torchvision.utils.save_image(image, img_path_f)
 
         with Image.open(img_path_f) as im:
             i = Image.fromarray(filter_image(im)).convert('RGB')
             i.save(img_path_f)
 
-        # image2midi(img_path_1)
+        image2midi(img_path_f)
 
 # def test():
 #     fs = FluidSynth()
